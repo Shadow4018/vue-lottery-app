@@ -1,0 +1,1 @@
+import{u as n}from"./users-kOFOywKT.js";import{q as c,G as f,z as u,n as i}from"./index-CKrmHyRV.js";function d(e){const s=n(),a=u(!1),r=u(null),o=i(()=>s.cachedUser(e.value)??null);async function t(){a.value=!0,r.value=null;try{await s.getUser(e.value)}catch(l){r.value=f(l)}finally{a.value=!1}}return c(e,t,{immediate:!0}),{user:o,isLoading:a,error:r,reload:t}}export{d as u};
