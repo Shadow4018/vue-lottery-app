@@ -1,0 +1,13 @@
+node_modules/
+dist/
+*.local
+
+# змінні середовища не комітимо, у репозиторії лише .env.example
+.env
+.env.*
+!.env.example
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
