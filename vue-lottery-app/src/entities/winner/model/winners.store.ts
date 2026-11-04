@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { MAX_WINNERS } from '@/shared/config/constants'
+import { MAX_WINNERS } from '../config/constants'
 import type { User } from '@/entities/user/model/types'
 import type { Winner } from './types'
 import { fullName } from '@/shared/lib/format'

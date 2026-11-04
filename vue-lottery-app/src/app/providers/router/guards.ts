@@ -1,7 +1,8 @@
 import type { Router } from 'vue-router'
+import { env } from '@/shared/config'
 import { useAuthStore } from '@/entities/session/model/auth.store'
 
-const APP_TITLE = 'Vue Lottery'
+const APP_TITLE = env.appTitle
 
 export function setupGuards(router: Router): void {
   router.beforeEach((to) => {

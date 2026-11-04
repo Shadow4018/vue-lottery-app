@@ -1,3 +1,5 @@
+import { env } from '@/shared/config'
+
 /**
  * Єдине місце, де відомо про fetch, базову адресу та обробку помилок.
  * Сервіси (репозиторії) не містять URL і не викликають fetch напряму.
@@ -36,7 +38,7 @@ export function setAuthHandlers(handlers: AuthHandlers): void {
 }
 
 function getBaseUrl(): string {
-  const url = import.meta.env.VITE_API_URL
+  const url = env.apiUrl
   if (!url) {
     throw new Error(
       'VITE_API_URL is not set. Copy .env.example to .env and restart the dev server.',

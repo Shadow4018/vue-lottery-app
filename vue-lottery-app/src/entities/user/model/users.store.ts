@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, shallowReactive } from 'vue'
-import { HttpError } from '@/shared/api/http-client'
-import { LOCAL_USER_ID_START, PAGE_SIZE } from '@/shared/config/constants'
-import { ServiceProvider } from '@/shared/api/service-provider'
+import { HttpError, ServiceProvider } from '@/shared/api'
+import { PAGE_SIZE } from '@/shared/config'
+import type { UserService } from '../api/user.service'
+import { LOCAL_USER_ID_START } from '../config/constants'
 import type { CreateUserDto, UpdateUserDto, User } from './types'
 import { getErrorMessage } from '@/shared/lib/error'
 
@@ -28,6 +29,8 @@ function isLocalUser(id: number): boolean {
  * сервера ми самі оновлюємо локальний стан: додаємо створеного, підміняємо оновленого, прибираємо видаленого.
  */
 export const useUsersStore = defineStore('users', () => {
+  const service = () => ServiceProvider.get<UserService>('users')
+
   const items = ref<User[]>([])
   const total = ref(0)
   const isLoading = ref(false)
@@ -67,7 +70,7 @@ export const useUsersStore = defineStore('users', () => {
     isLoading.value = true
     error.value = null
     try {
-      const result = await ServiceProvider.users.getAll({
+      const result = await service().getAll({
         limit: PAGE_SIZE,
         skip: (page - 1) * PAGE_SIZE,
         q,
@@ -103,13 +106,13 @@ export const useUsersStore = defineStore('users', () => {
     if (cached) {
       return cached
     }
-    const user = await ServiceProvider.users.getById(id)
+    const user = await service().getById(id)
     cache.set(id, user)
     return user
   }
 
   async function createUser(dto: CreateUserDto): Promise<User> {
-    const created = await ServiceProvider.users.create(dto)
+    const created = await service().create(dto)
     // DummyJSON щоразу повертає той самий id, тому призначаємо унікальний локальний
     const user: User = { ...created, id: LOCAL_USER_ID_START + localIdCounter++ }
     createdUsers.value.unshift(user)
@@ -124,7 +127,7 @@ export const useUsersStore = defineStore('users', () => {
   async function updateUser(id: number, dto: UpdateUserDto): Promise<User> {
     const current = await getUser(id)
     // користувачів, створених на клієнті, на сервері немає - оновлюємо лише локально
-    const fromServer = isLocalUser(id) ? {} : await ServiceProvider.users.update(id, dto)
+    const fromServer = isLocalUser(id) ? {} : await service().update(id, dto)
     const updated: User = { ...current, ...fromServer, ...dto, id }
 
     cache.set(id, updated)
@@ -135,7 +138,7 @@ export const useUsersStore = defineStore('users', () => {
 
   async function removeUser(id: number): Promise<void> {
     if (!isLocalUser(id)) {
-      await ServiceProvider.users.delete(id)
+      await service().delete(id)
       deletedIds.add(id)
     }
     cache.delete(id)

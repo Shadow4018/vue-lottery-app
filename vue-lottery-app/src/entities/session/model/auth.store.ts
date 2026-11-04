@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { AUTH_STORAGE_KEY } from '@/shared/config/constants'
-import { ServiceProvider } from '@/shared/api/service-provider'
+import { ServiceProvider } from '@/shared/api'
+import type { AuthService } from '../api/auth.service'
+import { AUTH_STORAGE_KEY } from '../config/constants'
 import type { AuthTokens, AuthUser, LoginCredentials } from './types'
-import type { User } from '@/entities/user/model/types'
 import { getErrorMessage } from '@/shared/lib/error'
 
 interface StoredAuth extends AuthTokens {
@@ -31,7 +31,7 @@ function loadStoredAuth(): StoredAuth | null {
 }
 
 /** У localStorage потрапляє лише мінімум даних, а не весь профіль із /auth/me. */
-function pickAuthUser(user: User): AuthUser {
+function pickAuthUser(user: AuthUser): AuthUser {
   return {
     id: user.id,
     username: user.username,
@@ -44,6 +44,8 @@ function pickAuthUser(user: User): AuthUser {
 }
 
 export const useAuthStore = defineStore('auth', () => {
+  const service = () => ServiceProvider.get<AuthService>('auth')
+
   const stored = loadStoredAuth()
 
   const accessToken = ref<string | null>(stored?.accessToken ?? null)
@@ -88,7 +90,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken: access,
         refreshToken: refresh,
         ...profile
-      } = await ServiceProvider.auth.login(credentials)
+      } = await service().login(credentials)
       accessToken.value = access
       refreshToken.value = refresh
       user.value = profile
@@ -125,7 +127,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!refreshToken.value) {
       return Promise.resolve(null)
     }
-    refreshPromise ??= ServiceProvider.auth
+    refreshPromise ??= service()
       .refresh(refreshToken.value)
       .then((tokens) => {
         accessToken.value = tokens.accessToken
@@ -142,7 +144,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** Перевіряє збережену сесію запитом до /auth/me (Bearer + автоматичний refresh при 401). */
   async function loadProfile(): Promise<void> {
     try {
-      user.value = pickAuthUser(await ServiceProvider.auth.getCurrentUser())
+      user.value = pickAuthUser(await service().getCurrentUser())
     } catch {
       // 401 обробляє interceptor (вихід із сесії); при проблемах з мережею лишаємо збережену сесію
     }

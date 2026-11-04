@@ -5,6 +5,10 @@ import { setAuthHandlers } from '@/shared/api/http-client'
 import App from './App.vue'
 import router from './providers/router'
 import { useAuthStore } from '@/entities/session/model/auth.store'
+import { registerServices } from './providers/services'
+
+// сервіси (Repository) реєструються до першого звернення стору до ServiceProvider
+registerServices()
 
 const app = createApp(App)
 const pinia = createPinia()
