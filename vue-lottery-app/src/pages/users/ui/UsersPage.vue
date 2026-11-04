@@ -44,7 +44,7 @@ function buildQuery(pageNumber: number, q: string): LocationQueryRaw {
 watch(
   [page, searchQuery],
   async () => {
-    await usersStore.fetchPage({ page: page.value, q: searchQuery.value })
+    await usersStore.fetchUsers({ page: page.value, q: searchQuery.value })
     if (!usersStore.error && page.value > totalPages.value) {
       await router.replace({ query: buildQuery(totalPages.value, searchQuery.value) })
     }
@@ -53,7 +53,7 @@ watch(
 )
 
 function reload(): void {
-  void usersStore.fetchPage({ page: page.value, q: searchQuery.value, force: true })
+  void usersStore.fetchUsers({ page: page.value, q: searchQuery.value, force: true })
 }
 
 function goToPage(pageNumber: number): void {
@@ -108,8 +108,8 @@ async function confirmDelete(): Promise<void> {
 
     <TheWinnersBlock
       :winners="winnersStore.winners"
-      :can-pick-winner="winnersStore.canPickFrom(usersStore.items)"
-      @pick-winner="winnersStore.pickFrom(usersStore.items)"
+      :can-pick-winner="winnersStore.canPickFrom(usersStore.users)"
+      @pick-winner="winnersStore.pickFrom(usersStore.users)"
       @remove-winner="winnersStore.remove"
     />
 
@@ -132,7 +132,7 @@ async function confirmDelete(): Promise<void> {
         </div>
       </div>
       <template v-else>
-        <UsersTable :users="usersStore.items" @remove="openDeleteModal" />
+        <UsersTable :users="usersStore.users" @remove="openDeleteModal" />
         <AppPagination :page="page" :total-pages="totalPages" @change="goToPage" />
       </template>
     </div>

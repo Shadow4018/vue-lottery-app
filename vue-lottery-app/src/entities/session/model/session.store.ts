@@ -1,22 +1,22 @@
 import { defineStore } from 'pinia'
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { ServiceProvider } from '@/shared/api'
+import { getErrorMessage } from '@/shared/lib/error'
 import type { AuthService } from '../api/auth.service'
 import { AUTH_STORAGE_KEY } from '../config/constants'
 import type { AuthTokens, AuthUser, LoginCredentials } from './types'
-import { getErrorMessage } from '@/shared/lib/error'
 
-interface StoredAuth extends AuthTokens {
+interface StoredSession extends AuthTokens {
   user: AuthUser | null
 }
 
-function loadStoredAuth(): StoredAuth | null {
+function loadStoredSession(): StoredSession | null {
   try {
     const raw = localStorage.getItem(AUTH_STORAGE_KEY)
     if (!raw) {
       return null
     }
-    const data = JSON.parse(raw) as Partial<StoredAuth>
+    const data = JSON.parse(raw) as Partial<StoredSession>
     if (typeof data.accessToken === 'string' && typeof data.refreshToken === 'string') {
       return {
         accessToken: data.accessToken,
@@ -43,10 +43,14 @@ function pickAuthUser(user: AuthUser): AuthUser {
   }
 }
 
-export const useAuthStore = defineStore('auth', () => {
+/**
+ * Сесія користувача: токени, поточний користувач, ознака авторизації.
+ * Стан синхронізується з localStorage вручну (функція persist); порівняння з
+ * pinia-plugin-persistedstate - у README.
+ */
+export const useSessionStore = defineStore('session', () => {
   const service = () => ServiceProvider.get<AuthService>('auth')
-
-  const stored = loadStoredAuth()
+  const stored = loadStoredSession()
 
   const accessToken = ref<string | null>(stored?.accessToken ?? null)
   const refreshToken = ref<string | null>(stored?.refreshToken ?? null)
@@ -58,43 +62,41 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => accessToken.value !== null)
 
-  // стан у сторі та в localStorage завжди збігається
-  watch(
-    [accessToken, refreshToken, user],
-    () => {
-      if (accessToken.value && refreshToken.value) {
-        const data: StoredAuth = {
-          accessToken: accessToken.value,
-          refreshToken: refreshToken.value,
-          user: user.value,
-        }
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data))
-      } else {
-        localStorage.removeItem(AUTH_STORAGE_KEY)
+  /** Стан у сторі та в localStorage завжди збігається: викликається після кожної зміни сесії. */
+  function persist(): void {
+    if (accessToken.value && refreshToken.value) {
+      const data: StoredSession = {
+        accessToken: accessToken.value,
+        refreshToken: refreshToken.value,
+        user: user.value,
       }
-    },
-    { deep: true },
-  )
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(data))
+    } else {
+      localStorage.removeItem(AUTH_STORAGE_KEY)
+    }
+  }
+
+  function setSession(tokens: AuthTokens, profile: AuthUser | null = user.value): void {
+    accessToken.value = tokens.accessToken
+    refreshToken.value = tokens.refreshToken
+    user.value = profile
+    sessionExpired.value = false
+    persist()
+  }
 
   function clearSession(): void {
     accessToken.value = null
     refreshToken.value = null
     user.value = null
+    persist()
   }
 
   async function login(credentials: LoginCredentials): Promise<boolean> {
     isLoading.value = true
     error.value = null
     try {
-      const {
-        accessToken: access,
-        refreshToken: refresh,
-        ...profile
-      } = await service().login(credentials)
-      accessToken.value = access
-      refreshToken.value = refresh
-      user.value = profile
-      sessionExpired.value = false
+      const { accessToken: access, refreshToken: refresh, ...profile } = await service().login(credentials)
+      setSession({ accessToken: access, refreshToken: refresh }, profile)
       return true
     } catch (e) {
       error.value = getErrorMessage(e)
@@ -130,8 +132,8 @@ export const useAuthStore = defineStore('auth', () => {
     refreshPromise ??= service()
       .refresh(refreshToken.value)
       .then((tokens) => {
-        accessToken.value = tokens.accessToken
-        refreshToken.value = tokens.refreshToken
+        // користувач (user) лишається тим самим - оновлюються лише токени
+        setSession(tokens)
         return tokens.accessToken
       })
       .catch(() => null)
@@ -145,6 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function loadProfile(): Promise<void> {
     try {
       user.value = pickAuthUser(await service().getCurrentUser())
+      persist()
     } catch {
       // 401 обробляє interceptor (вихід із сесії); при проблемах з мережею лишаємо збережену сесію
     }
@@ -158,6 +161,8 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     sessionExpired,
     isAuthenticated,
+    setSession,
+    clearSession,
     login,
     logout,
     expireSession,

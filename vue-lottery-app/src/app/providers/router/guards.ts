@@ -1,12 +1,12 @@
 import type { Router } from 'vue-router'
 import { env } from '@/shared/config'
-import { useAuthStore } from '@/entities/session/model/auth.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 
 const APP_TITLE = env.appTitle
 
 export function setupGuards(router: Router): void {
   router.beforeEach((to) => {
-    const auth = useAuthStore()
+    const auth = useSessionStore()
 
     // to.matched містить і батьківські записи, тому requiresAuth з /users діє на всі вкладені маршрути
     if (to.matched.some((record) => record.meta.requiresAuth) && !auth.isAuthenticated) {

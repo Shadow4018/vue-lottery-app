@@ -2,10 +2,10 @@
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import LoginForm from '@/features/auth/ui/LoginForm.vue'
-import { useAuthStore } from '@/entities/session/model/auth.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 import type { LoginCredentials } from '@/entities/session/model/types'
 
-const auth = useAuthStore()
+const auth = useSessionStore()
 const route = useRoute()
 const router = useRouter()
 

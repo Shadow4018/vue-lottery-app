@@ -16,7 +16,7 @@ export function useUser(id: Ref<number>) {
     isLoading.value = true
     error.value = null
     try {
-      await store.getUser(id.value)
+      await store.fetchUser(id.value)
     } catch (e) {
       error.value = getErrorMessage(e)
     } finally {

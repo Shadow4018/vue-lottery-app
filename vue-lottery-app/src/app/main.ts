@@ -4,7 +4,7 @@ import './styles/main.scss'
 import { setAuthHandlers } from '@/shared/api/http-client'
 import App from './App.vue'
 import router from './providers/router'
-import { useAuthStore } from '@/entities/session/model/auth.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 import { registerServices } from './providers/services'
 
 // сервіси (Repository) реєструються до першого звернення стору до ServiceProvider
@@ -16,7 +16,7 @@ const pinia = createPinia()
 app.use(pinia)
 
 // зв'язуємо http-клієнт зі сховищем авторизації (Bearer-токен, refresh при 401)
-const auth = useAuthStore(pinia)
+const auth = useSessionStore(pinia)
 setAuthHandlers({
   getAccessToken: () => auth.accessToken,
   refreshAccessToken: () => auth.refreshAccessToken(),

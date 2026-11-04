@@ -31,7 +31,7 @@ function isLocalUser(id: number): boolean {
 export const useUsersStore = defineStore('users', () => {
   const service = () => ServiceProvider.get<UserService>('users')
 
-  const items = ref<User[]>([])
+  const users = ref<User[]>([])
   const total = ref(0)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
@@ -60,7 +60,7 @@ export const useUsersStore = defineStore('users', () => {
     return page === 1 && q === '' ? [...createdUsers.value, ...base] : base
   }
 
-  async function fetchPage({ page, q, force = false }: FetchPageParams): Promise<void> {
+  async function fetchUsers({ page, q, force = false }: FetchPageParams): Promise<void> {
     const key = pageKey(page, q)
     if (!force && key === loadedKey.value) {
       return
@@ -78,7 +78,7 @@ export const useUsersStore = defineStore('users', () => {
       if (requestId !== lastRequestId) {
         return
       }
-      items.value = applyLocalState(result.items, page, q)
+      users.value = applyLocalState(result.items, page, q)
       const delta = q === '' ? createdUsers.value.length - deletedIds.size : 0
       total.value = Math.max(0, result.total + delta)
       loadedKey.value = key
@@ -98,7 +98,7 @@ export const useUsersStore = defineStore('users', () => {
     return cache.get(id)
   }
 
-  async function getUser(id: number): Promise<User> {
+  async function fetchUser(id: number): Promise<User> {
     if (deletedIds.has(id)) {
       throw new HttpError(404, `User with id '${id}' was deleted`)
     }
@@ -118,20 +118,20 @@ export const useUsersStore = defineStore('users', () => {
     createdUsers.value.unshift(user)
     cache.set(user.id, user)
     if (loadedKey.value === pageKey(1, '')) {
-      items.value = [user, ...items.value]
+      users.value = [user, ...users.value]
       total.value += 1
     }
     return user
   }
 
   async function updateUser(id: number, dto: UpdateUserDto): Promise<User> {
-    const current = await getUser(id)
+    const current = await fetchUser(id)
     // користувачів, створених на клієнті, на сервері немає - оновлюємо лише локально
     const fromServer = isLocalUser(id) ? {} : await service().update(id, dto)
     const updated: User = { ...current, ...fromServer, ...dto, id }
 
     cache.set(id, updated)
-    items.value = items.value.map((user) => (user.id === id ? updated : user))
+    users.value = users.value.map((user) => (user.id === id ? updated : user))
     createdUsers.value = createdUsers.value.map((user) => (user.id === id ? updated : user))
     return updated
   }
@@ -143,21 +143,21 @@ export const useUsersStore = defineStore('users', () => {
     }
     cache.delete(id)
     createdUsers.value = createdUsers.value.filter((user) => user.id !== id)
-    const before = items.value.length
-    items.value = items.value.filter((user) => user.id !== id)
-    if (items.value.length < before) {
+    const before = users.value.length
+    users.value = users.value.filter((user) => user.id !== id)
+    if (users.value.length < before) {
       total.value = Math.max(0, total.value - 1)
     }
   }
 
   return {
-    items,
+    users,
     total,
     isLoading,
     error,
-    fetchPage,
+    fetchUsers,
     cachedUser,
-    getUser,
+    fetchUser,
     createUser,
     updateUser,
     removeUser,

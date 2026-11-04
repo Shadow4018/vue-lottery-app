@@ -4,7 +4,7 @@ import type { Component } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import AuthLayout from './layouts/AuthLayout.vue'
 import DefaultLayout from './layouts/DefaultLayout.vue'
-import { useAuthStore } from '@/entities/session/model/auth.store'
+import { useSessionStore } from '@/entities/session/model/session.store'
 
 const LAYOUTS: Record<'default' | 'auth', Component> = {
   default: DefaultLayout,
@@ -13,7 +13,7 @@ const LAYOUTS: Record<'default' | 'auth', Component> = {
 
 const route = useRoute()
 const router = useRouter()
-const auth = useAuthStore()
+const auth = useSessionStore()
 
 // layout вибирається за meta.layout поточного маршруту
 const layout = computed(() => LAYOUTS[route.meta.layout ?? 'default'])
