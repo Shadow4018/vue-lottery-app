@@ -6,6 +6,7 @@ import App from './App.vue'
 import router from './providers/router'
 import { useSessionStore } from '@/entities/session/model/session.store'
 import { registerServices } from './providers/services'
+import { setupUi } from './providers/ui'
 
 // сервіси (Repository) реєструються до першого звернення стору до ServiceProvider
 registerServices()
@@ -14,6 +15,7 @@ const app = createApp(App)
 const pinia = createPinia()
 // Pinia має бути підключена до роутера: navigation guard читає стор авторизації
 app.use(pinia)
+setupUi(app)
 
 // зв'язуємо http-клієнт зі сховищем авторизації (Bearer-токен, refresh при 401)
 const auth = useSessionStore(pinia)
