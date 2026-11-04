@@ -1,9 +1,9 @@
 {
   "name": "vue-lottery-app",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
-  "description": "Vue 3 lottery app: vue-router, Repository pattern, JWT auth (lab 5)",
+  "description": "Vue 3 lottery app: FSD architecture, Pinia, PrimeVue (lab 6)",
   "scripts": {
     "dev": "vite",
     "start": "vite",
@@ -15,12 +15,16 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,scss}\"",
     "format:check": "prettier --check \"src/**/*.{ts,vue,scss}\"",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "lint:fsd": "eslint --config eslint.fsd.config.js src"
   },
   "dependencies": {
+    "@primeuix/themes": "^1.2.0",
     "@vee-validate/yup": "^4.15.0",
     "bootstrap": "^5.3.8",
     "pinia": "^3.0.3",
+    "pinia-plugin-persistedstate": "^4.5.0",
+    "primevue": "^4.3.0",
     "vee-validate": "^4.15.0",
     "vue": "^3.5.0",
     "vue-router": "^4.5.0",
@@ -32,6 +36,8 @@
     "@vitejs/plugin-vue": "^6.0.2",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
+    "eslint-import-resolver-typescript": "^4.4.0",
+    "eslint-plugin-boundaries": "^5.0.1",
     "eslint-plugin-vue": "^10.0.0",
     "gh-pages": "^6.3.0",
     "prettier": "^3.3.0",
