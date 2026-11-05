@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
+import { AppButton } from '@/shared/ui'
 </script>
 
 <template>
@@ -7,7 +7,7 @@ import { RouterLink } from 'vue-router'
     <h1 class="display-4">404</h1>
     <p class="text-body-secondary">The page you are looking for does not exist.</p>
     <div>
-      <RouterLink :to="{ name: 'home' }" class="btn btn-primary">Back to home</RouterLink>
+      <AppButton :to="{ name: 'home' }" label="Back to home" />
     </div>
   </section>
 </template>

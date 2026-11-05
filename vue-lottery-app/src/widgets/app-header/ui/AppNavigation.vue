@@ -1,14 +1,10 @@
 <script setup lang="ts">
-import { RouterLink, useRouter } from 'vue-router'
-import { useSessionStore } from '@/entities/session/model/session.store'
+import { storeToRefs } from 'pinia'
+import { RouterLink } from 'vue-router'
+import { useSessionStore } from '@/entities/session'
+import { LogoutButton } from '@/features/auth'
 
-const auth = useSessionStore()
-const router = useRouter()
-
-async function handleLogout(): Promise<void> {
-  auth.logout()
-  await router.push({ name: 'login' })
-}
+const { isAuthenticated } = storeToRefs(useSessionStore())
 </script>
 
 <template>
@@ -38,9 +34,7 @@ async function handleLogout(): Promise<void> {
     >
       Users
     </RouterLink>
-    <button v-if="auth.isAuthenticated" type="button" class="app-nav__link" @click="handleLogout">
-      Logout
-    </button>
+    <LogoutButton v-if="isAuthenticated" />
     <RouterLink
       v-else
       :to="{ name: 'login' }"
@@ -52,3 +46,29 @@ async function handleLogout(): Promise<void> {
     </RouterLink>
   </nav>
 </template>
+
+<style scoped lang="scss">
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.app-nav__link {
+  padding: 0.4rem 0.75rem;
+  border-bottom: 2px solid transparent;
+  color: var(--bs-body-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--bs-primary);
+  }
+
+  // активний пункт меню
+  &.is-active {
+    border-bottom-color: var(--bs-primary);
+    color: var(--bs-primary);
+    font-weight: 700;
+  }
+}
+</style>

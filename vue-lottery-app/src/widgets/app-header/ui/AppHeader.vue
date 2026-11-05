@@ -11,3 +11,11 @@ import AppNavigation from './AppNavigation.vue'
     </div>
   </header>
 </template>
+
+<style scoped lang="scss">
+.app-header {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--bs-border-color);
+  background-color: var(--app-surface);
+}
+</style>

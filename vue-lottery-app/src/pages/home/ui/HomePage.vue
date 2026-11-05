@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { REPO_URL, technologies } from '@/shared/config/author'
+import { REPO_URL, technologies } from '@/shared/config'
 </script>
 
 <template>
@@ -8,7 +8,7 @@ import { REPO_URL, technologies } from '@/shared/config/author'
     <p>
       Навчальний застосунок-лотерея: список користувачів із REST API, пагінація та пошук (стан
       зберігається в URL), перегляд і редагування користувача, вибір переможців та авторизація на
-      основі JWT.
+      основі JWT. Архітектура - Feature-Sliced Design.
     </p>
 
     <h2 class="section-title">Технології</h2>

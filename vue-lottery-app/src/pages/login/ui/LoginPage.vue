@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import LoginForm from '@/features/auth/ui/LoginForm.vue'
-import { useSessionStore } from '@/entities/session/model/session.store'
-import type { LoginCredentials } from '@/entities/session/model/types'
+import { useSessionStore } from '@/entities/session'
+import type { LoginCredentials } from '@/entities/session'
+import { LoginForm } from '@/features/auth'
+import { AppMessage, useNotify } from '@/shared/ui'
 
-const auth = useSessionStore()
 const route = useRoute()
 const router = useRouter()
+const notify = useNotify()
+const session = useSessionStore()
+const { isLoading, sessionExpired } = storeToRefs(session)
 
 // після входу повертаємо користувача на сторінку, яку він запитував (?redirect=...)
 const redirectTarget = computed(() => {
@@ -18,11 +22,14 @@ const redirectTarget = computed(() => {
     : '/users'
 })
 
-onMounted(() => auth.clearError())
+onMounted(() => session.clearError())
 
 async function handleSubmit(credentials: LoginCredentials): Promise<void> {
-  if (await auth.login(credentials)) {
+  if (await session.login(credentials)) {
+    notify.success('Signed in', `Welcome, ${session.user?.firstName ?? credentials.username}!`)
     await router.push(redirectTarget.value)
+  } else {
+    notify.error('Login failed', session.error ?? undefined)
   }
 }
 </script>
@@ -30,16 +37,12 @@ async function handleSubmit(credentials: LoginCredentials): Promise<void> {
 <template>
   <section class="card app-card">
     <h1 class="page-title">Login</h1>
-    <div v-if="auth.sessionExpired" class="alert alert-warning" role="alert">
+    <AppMessage v-if="sessionExpired" severity="warn">
       Your session has expired. Please log in again.
-    </div>
+    </AppMessage>
     <p class="text-body-secondary small">
       Test account: <code>emilys</code> / <code>emilyspass</code>
     </p>
-    <LoginForm
-      :is-submitting="auth.isLoading"
-      :server-error="auth.error ?? ''"
-      @submit="handleSubmit"
-    />
+    <LoginForm :is-submitting="isLoading" @submit="handleSubmit" />
   </section>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { author } from '@/shared/config/author'
+import { author } from '@/shared/config'
 </script>
 
 <template>

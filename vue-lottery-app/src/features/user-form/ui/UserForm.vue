@@ -2,12 +2,10 @@
 import { toTypedSchema } from '@vee-validate/yup'
 import { useForm } from 'vee-validate'
 import { useId } from 'vue'
-import type { SelectOption } from '@/shared/ui/types'
-import type { UserFormValues } from '../model/types'
+import { AppButton, AppInput, AppMessage, AppSelect } from '@/shared/ui'
+import type { SelectOption } from '@/shared/ui'
 import { buildUserSchema } from '../model/schema'
-import BaseButton from '@/shared/ui/BaseButton.vue'
-import BaseInput from '@/shared/ui/BaseInput.vue'
-import BaseSelect from '@/shared/ui/BaseSelect.vue'
+import type { UserFormValues } from '../model/types'
 
 const props = withDefaults(
   defineProps<{
@@ -32,7 +30,7 @@ const GENDER_OPTIONS: SelectOption[] = [
 
 const uid = useId()
 
-// VeeValidate + yup: правила описані в validation/schemas.ts, а не в шаблоні
+// VeeValidate + yup: правила описані в model/schema.ts, а не в шаблоні
 const { errors, handleSubmit, defineField } = useForm({
   validationSchema: toTypedSchema(buildUserSchema(props.passwordRequired)),
   initialValues: props.initialValues ?? {
@@ -64,21 +62,21 @@ const onSubmit = handleSubmit((values) => {
 
 <template>
   <form novalidate @submit.prevent="onSubmit">
-    <BaseInput
+    <AppInput
       :id="`${uid}-first-name`"
       v-model="firstName"
       label="First name"
       placeholder="Enter first name"
       :error="errors.firstName"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-last-name`"
       v-model="lastName"
       label="Last name"
       placeholder="Enter last name"
       :error="errors.lastName"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-username`"
       v-model="username"
       label="Username"
@@ -86,7 +84,7 @@ const onSubmit = handleSubmit((values) => {
       autocomplete="off"
       :error="errors.username"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-email`"
       v-model="email"
       type="email"
@@ -94,7 +92,7 @@ const onSubmit = handleSubmit((values) => {
       placeholder="Enter email"
       :error="errors.email"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-password`"
       v-model="password"
       type="password"
@@ -103,7 +101,7 @@ const onSubmit = handleSubmit((values) => {
       autocomplete="new-password"
       :error="errors.password"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-age`"
       v-model="age"
       type="number"
@@ -111,7 +109,7 @@ const onSubmit = handleSubmit((values) => {
       placeholder="Enter age"
       :error="errors.age"
     />
-    <BaseSelect
+    <AppSelect
       :id="`${uid}-gender`"
       v-model="gender"
       label="Gender"
@@ -119,7 +117,7 @@ const onSubmit = handleSubmit((values) => {
       :options="GENDER_OPTIONS"
       :error="errors.gender"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-phone`"
       v-model="phone"
       type="tel"
@@ -128,12 +126,14 @@ const onSubmit = handleSubmit((values) => {
       :error="errors.phone"
     />
 
-    <div v-if="serverError" class="alert alert-danger" role="alert">{{ serverError }}</div>
+    <AppMessage v-if="serverError" severity="error">{{ serverError }}</AppMessage>
 
     <div class="d-flex justify-content-end mt-4">
-      <BaseButton type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? 'Saving...' : submitLabel }}
-      </BaseButton>
+      <AppButton
+        type="submit"
+        :label="isSubmitting ? 'Saving...' : submitLabel"
+        :loading="isSubmitting"
+      />
     </div>
   </form>
 </template>

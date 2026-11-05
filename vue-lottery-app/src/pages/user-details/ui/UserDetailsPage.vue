@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RouterLink, RouterView, useRoute } from 'vue-router'
-import BaseButton from '@/shared/ui/BaseButton.vue'
-import { useUser } from '@/entities/user/model/useUser'
-import { fullName } from '@/shared/lib/format'
+import { RouterView, useRoute } from 'vue-router'
+import { useUser } from '@/entities/user'
+import { fullName } from '@/shared/lib'
+import { AppButton, AppMessage, AppSpinner } from '@/shared/ui'
 
 // id приходить як prop завдяки props: true у конфігурації маршруту
 const props = defineProps<{
@@ -23,32 +23,28 @@ const isEditing = computed(() => route.name === 'user-edit')
       <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="page-title mb-0">User #{{ id }}</h1>
         <div class="d-flex gap-2">
-          <RouterLink :to="{ name: 'users' }" class="btn btn-sm btn-outline-secondary">
-            Back to users
-          </RouterLink>
-          <RouterLink
+          <AppButton
+            :to="{ name: 'users' }"
+            label="Back to users"
+            size="sm"
+            variant="outlined-secondary"
+          />
+          <AppButton
             v-if="user && !isEditing"
             :to="{ name: 'user-edit', params: { id } }"
-            class="btn btn-sm btn-primary"
-          >
-            Edit
-          </RouterLink>
+            label="Edit"
+            size="sm"
+          />
         </div>
       </div>
 
-      <div
-        v-if="error"
-        class="alert alert-danger d-flex align-items-center justify-content-between mb-0"
-        role="alert"
-      >
-        <span>{{ error }}</span>
-        <BaseButton size="sm" variant="outline-danger" @click="reload">Retry</BaseButton>
-      </div>
-      <div v-else-if="isLoading && !user" class="text-center py-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <AppMessage v-if="error" severity="error">
+        {{ error }}
+        <template #action>
+          <AppButton label="Retry" size="sm" variant="outlined-danger" @click="reload" />
+        </template>
+      </AppMessage>
+      <AppSpinner v-else-if="isLoading && !user" />
       <div v-else-if="user" class="d-flex gap-4 flex-wrap">
         <img
           v-if="user.image"
@@ -85,3 +81,26 @@ const isEditing = computed(() => route.name === 'user-edit')
     <RouterView />
   </section>
 </template>
+
+<style scoped lang="scss">
+.user-avatar {
+  border-radius: 50%;
+  background-color: var(--bs-tertiary-bg);
+  object-fit: cover;
+}
+
+.user-info {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1.5rem;
+
+  dt {
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+  }
+}
+</style>

@@ -2,18 +2,15 @@
 import { toTypedSchema } from '@vee-validate/yup'
 import { useForm } from 'vee-validate'
 import { useId } from 'vue'
-import type { LoginCredentials } from '@/entities/session/model/types'
+import type { LoginCredentials } from '@/entities/session'
+import { AppButton, AppInput } from '@/shared/ui'
 import { loginSchema } from '../model/schema'
-import BaseButton from '@/shared/ui/BaseButton.vue'
-import BaseInput from '@/shared/ui/BaseInput.vue'
 
 withDefaults(
   defineProps<{
     isSubmitting?: boolean
-    /** Помилка авторизації від сервера - показується прямо у формі. */
-    serverError?: string
   }>(),
-  { isSubmitting: false, serverError: '' },
+  { isSubmitting: false },
 )
 
 const emit = defineEmits<{
@@ -22,6 +19,7 @@ const emit = defineEmits<{
 
 const uid = useId()
 
+// VeeValidate + yup: правила описані в model/schema.ts
 const { errors, handleSubmit, defineField } = useForm({
   validationSchema: toTypedSchema(loginSchema),
   initialValues: { username: '', password: '' },
@@ -37,7 +35,7 @@ const onSubmit = handleSubmit((values) => {
 
 <template>
   <form novalidate @submit.prevent="onSubmit">
-    <BaseInput
+    <AppInput
       :id="`${uid}-username`"
       v-model="username"
       label="Username"
@@ -45,7 +43,7 @@ const onSubmit = handleSubmit((values) => {
       autocomplete="username"
       :error="errors.username"
     />
-    <BaseInput
+    <AppInput
       :id="`${uid}-password`"
       v-model="password"
       type="password"
@@ -55,10 +53,11 @@ const onSubmit = handleSubmit((values) => {
       :error="errors.password"
     />
 
-    <div v-if="serverError" class="alert alert-danger" role="alert">{{ serverError }}</div>
-
-    <BaseButton type="submit" class="w-100 mt-2" :disabled="isSubmitting">
-      {{ isSubmitting ? 'Signing in...' : 'Login' }}
-    </BaseButton>
+    <AppButton
+      type="submit"
+      class="w-100 mt-2"
+      :label="isSubmitting ? 'Signing in...' : 'Login'"
+      :loading="isSubmitting"
+    />
   </form>
 </template>

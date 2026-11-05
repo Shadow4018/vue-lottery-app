@@ -1,24 +1,35 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import type { LocationQueryRaw } from 'vue-router'
-import AppPagination from '@/shared/ui/AppPagination.vue'
-import BaseButton from '@/shared/ui/BaseButton.vue'
-import BaseModal from '@/shared/ui/BaseModal.vue'
-import SearchBar from '@/shared/ui/SearchBar.vue'
-import TheWinnersBlock from '@/widgets/winners-block/ui/TheWinnersBlock.vue'
-import UsersTable from '@/widgets/users-table/ui/UsersTable.vue'
-import { PAGE_SIZE } from '@/shared/config/constants'
-import { useUsersStore } from '@/entities/user/model/users.store'
-import { useWinnersStore } from '@/entities/winner/model/winners.store'
-import type { User } from '@/entities/user/model/types'
-import { getErrorMessage } from '@/shared/lib/error'
-import { fullName } from '@/shared/lib/format'
+import { useUsersStore } from '@/entities/user'
+import type { User } from '@/entities/user'
+import { useWinnersStore } from '@/entities/winner'
+import { PAGE_SIZE } from '@/shared/config'
+import { fullName, getErrorMessage } from '@/shared/lib'
+import {
+  AppButton,
+  AppConfirmDialog,
+  AppMessage,
+  AppPagination,
+  AppSearchInput,
+  AppSpinner,
+  useNotify,
+} from '@/shared/ui'
+import { UsersTable } from '@/widgets/users-table'
+import { TheWinnersBlock } from '@/widgets/winners-block'
 
 const route = useRoute()
 const router = useRouter()
+const notify = useNotify()
+
 const usersStore = useUsersStore()
 const winnersStore = useWinnersStore()
+// state та getters - через storeToRefs (зберігає реактивність), actions - напряму зі стору
+const { users, total, isLoading, error } = storeToRefs(usersStore)
+const { winners } = storeToRefs(winnersStore)
+const { fetchUsers, removeUser } = usersStore
 
 // Сторінка та пошуковий запит живуть в query-параметрах URL (/users?page=2&q=john),
 // тому посилання на конкретний стан списку можна скопіювати, а кнопка "Назад" працює.
@@ -27,7 +38,7 @@ const page = computed(() => {
   return Number.isInteger(value) && value > 0 ? value : 1
 })
 const searchQuery = computed(() => (typeof route.query.q === 'string' ? route.query.q : ''))
-const totalPages = computed(() => Math.max(1, Math.ceil(usersStore.total / PAGE_SIZE)))
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / PAGE_SIZE)))
 
 function buildQuery(pageNumber: number, q: string): LocationQueryRaw {
   const query: LocationQueryRaw = {}
@@ -44,8 +55,8 @@ function buildQuery(pageNumber: number, q: string): LocationQueryRaw {
 watch(
   [page, searchQuery],
   async () => {
-    await usersStore.fetchUsers({ page: page.value, q: searchQuery.value })
-    if (!usersStore.error && page.value > totalPages.value) {
+    await fetchUsers({ page: page.value, q: searchQuery.value })
+    if (!error.value && page.value > totalPages.value) {
       await router.replace({ query: buildQuery(totalPages.value, searchQuery.value) })
     }
   },
@@ -53,7 +64,7 @@ watch(
 )
 
 function reload(): void {
-  void usersStore.fetchUsers({ page: page.value, q: searchQuery.value, force: true })
+  void fetchUsers({ page: page.value, q: searchQuery.value, force: true })
 }
 
 function goToPage(pageNumber: number): void {
@@ -71,13 +82,12 @@ function handleSearch(q: string): void {
 
 // --- видалення користувача ---
 const userToDelete = ref<User | null>(null)
-const isDeleteModalOpen = ref(false)
+const isDeleteDialogOpen = ref(false)
 const isDeleting = ref(false)
-const deleteError = ref<string | null>(null)
 
-function openDeleteModal(user: User): void {
+function openDeleteDialog(user: User): void {
   userToDelete.value = user
-  isDeleteModalOpen.value = true
+  isDeleteDialogOpen.value = true
 }
 
 async function confirmDelete(): Promise<void> {
@@ -86,15 +96,15 @@ async function confirmDelete(): Promise<void> {
     return
   }
   isDeleting.value = true
-  deleteError.value = null
   try {
-    await usersStore.removeUser(user.id)
+    await removeUser(user.id)
     winnersStore.remove(user.id)
+    notify.success('User deleted', fullName(user))
   } catch (e) {
-    deleteError.value = getErrorMessage(e)
+    notify.error('Failed to delete user', getErrorMessage(e))
   } finally {
     isDeleting.value = false
-    isDeleteModalOpen.value = false
+    isDeleteDialogOpen.value = false
   }
 }
 </script>
@@ -103,50 +113,55 @@ async function confirmDelete(): Promise<void> {
   <section>
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h1 class="page-title mb-0">Users</h1>
-      <RouterLink :to="{ name: 'user-create' }" class="btn btn-primary">Add user</RouterLink>
+      <AppButton :to="{ name: 'user-create' }" label="Add user" />
     </div>
 
     <TheWinnersBlock
-      :winners="winnersStore.winners"
-      :can-pick-winner="winnersStore.canPickFrom(usersStore.users)"
-      @pick-winner="winnersStore.pickFrom(usersStore.users)"
+      :winners="winners"
+      :can-pick-winner="winnersStore.canPickFrom(users)"
+      @pick-winner="winnersStore.pickFrom(users)"
       @remove-winner="winnersStore.remove"
     />
 
-    <div v-if="deleteError" class="alert alert-danger" role="alert">{{ deleteError }}</div>
-
     <div class="card app-card">
-      <SearchBar class="mb-3" :value="searchQuery" @filter-by-name="handleSearch" />
+      <AppSearchInput
+        class="mb-3"
+        placeholder="Search users"
+        :value="searchQuery"
+        @search="handleSearch"
+      />
 
-      <div
-        v-if="usersStore.error"
-        class="alert alert-danger d-flex align-items-center justify-content-between mb-0"
-        role="alert"
-      >
-        <span>{{ usersStore.error }}</span>
-        <BaseButton size="sm" variant="outline-danger" @click="reload">Retry</BaseButton>
-      </div>
-      <div v-else-if="usersStore.isLoading" class="text-center py-4">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
+      <AppMessage v-if="error" severity="error">
+        {{ error }}
+        <template #action>
+          <AppButton label="Retry" size="sm" variant="outlined-danger" @click="reload" />
+        </template>
+      </AppMessage>
+      <AppSpinner v-else-if="isLoading" />
       <template v-else>
-        <UsersTable :users="usersStore.users" @remove="openDeleteModal" />
-        <AppPagination :page="page" :total-pages="totalPages" @change="goToPage" />
+        <UsersTable :users="users" @remove="openDeleteDialog" />
+        <AppPagination
+          :page="page"
+          :total-records="total"
+          :rows="PAGE_SIZE"
+          @change="goToPage"
+        />
       </template>
     </div>
 
-    <BaseModal v-model="isDeleteModalOpen" title="Видалити користувача">
+    <AppConfirmDialog
+      v-model:visible="isDeleteDialogOpen"
+      title="Видалити користувача"
+      confirm-label="Так"
+      cancel-label="Ні"
+      :loading="isDeleting"
+      @confirm="confirmDelete"
+    >
       <p v-if="userToDelete" class="mb-0">
         Ви дійсно бажаєте видалити користувача "{{ fullName(userToDelete) }}", "{{
           userToDelete.email
         }}"?
       </p>
-      <template #footer>
-        <BaseButton variant="danger" :disabled="isDeleting" @click="confirmDelete">Так</BaseButton>
-        <BaseButton variant="secondary" @click="isDeleteModalOpen = false">Ні</BaseButton>
-      </template>
-    </BaseModal>
+    </AppConfirmDialog>
   </section>
 </template>

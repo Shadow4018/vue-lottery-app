@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { RouterLink, useRouter } from 'vue-router'
-import UserForm from '@/features/user-form/ui/UserForm.vue'
-import { useUsersStore } from '@/entities/user/model/users.store'
-import type { UserFormValues } from '@/features/user-form/model/types'
-import { getErrorMessage } from '@/shared/lib/error'
-import { toCreateUserDto } from '@/features/user-form/lib/user-dto'
+import { useRouter } from 'vue-router'
+import { useUsersStore } from '@/entities/user'
+import { UserForm, toCreateUserDto } from '@/features/user-form'
+import type { UserFormValues } from '@/features/user-form'
+import { fullName, getErrorMessage } from '@/shared/lib'
+import { AppButton, useNotify } from '@/shared/ui'
 
 const router = useRouter()
-const usersStore = useUsersStore()
+const notify = useNotify()
+const { createUser } = useUsersStore()
 
 const isSubmitting = ref(false)
 const serverError = ref('')
@@ -17,10 +18,12 @@ async function handleSubmit(values: UserFormValues): Promise<void> {
   isSubmitting.value = true
   serverError.value = ''
   try {
-    await usersStore.createUser(toCreateUserDto(values))
+    const user = await createUser(toCreateUserDto(values))
+    notify.success('User created', fullName(user))
     await router.push({ name: 'users' })
   } catch (e) {
     serverError.value = getErrorMessage(e)
+    notify.error('Failed to create user', serverError.value)
   } finally {
     isSubmitting.value = false
   }
@@ -31,9 +34,12 @@ async function handleSubmit(values: UserFormValues): Promise<void> {
   <section class="card app-card">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h1 class="page-title mb-0">New user</h1>
-      <RouterLink :to="{ name: 'users' }" class="btn btn-sm btn-outline-secondary">
-        Back to users
-      </RouterLink>
+      <AppButton
+        :to="{ name: 'users' }"
+        label="Back to users"
+        size="sm"
+        variant="outlined-secondary"
+      />
     </div>
     <UserForm
       submit-label="Save"

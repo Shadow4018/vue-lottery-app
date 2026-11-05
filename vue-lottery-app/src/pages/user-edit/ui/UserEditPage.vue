@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import UserForm from '@/features/user-form/ui/UserForm.vue'
-import { useUser } from '@/entities/user/model/useUser'
-import { useUsersStore } from '@/entities/user/model/users.store'
-import type { UserFormValues } from '@/features/user-form/model/types'
-import { getErrorMessage } from '@/shared/lib/error'
-import { toFormValues, toUpdateUserDto } from '@/features/user-form/lib/user-dto'
+import { useUser, useUsersStore } from '@/entities/user'
+import { UserForm, toFormValues, toUpdateUserDto } from '@/features/user-form'
+import type { UserFormValues } from '@/features/user-form'
+import { fullName, getErrorMessage } from '@/shared/lib'
+import { useNotify } from '@/shared/ui'
 
 const props = defineProps<{
   id: string
 }>()
 
 const router = useRouter()
-const usersStore = useUsersStore()
+const notify = useNotify()
+const { updateUser } = useUsersStore()
 
 const userId = computed(() => Number(props.id))
 const { user } = useUser(userId)
@@ -25,10 +25,12 @@ async function handleSubmit(values: UserFormValues): Promise<void> {
   isSubmitting.value = true
   serverError.value = ''
   try {
-    await usersStore.updateUser(userId.value, toUpdateUserDto(values))
+    const updated = await updateUser(userId.value, toUpdateUserDto(values))
+    notify.success('User updated', fullName(updated))
     await router.push({ name: 'user-detail', params: { id: props.id } })
   } catch (e) {
     serverError.value = getErrorMessage(e)
+    notify.error('Failed to update user', serverError.value)
   } finally {
     isSubmitting.value = false
   }
