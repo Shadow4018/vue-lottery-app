@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
 import { useSessionStore } from '@/entities/session'
 import { LogoutButton } from '@/features/auth'
+import { ThemeSwitcher } from '@/features/theme-switcher'
 
 const { isAuthenticated } = storeToRefs(useSessionStore())
 </script>
@@ -34,6 +35,7 @@ const { isAuthenticated } = storeToRefs(useSessionStore())
     >
       Users
     </RouterLink>
+    <ThemeSwitcher />
     <LogoutButton v-if="isAuthenticated" />
     <RouterLink
       v-else
