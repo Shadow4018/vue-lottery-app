@@ -39,5 +39,11 @@ onBeforeUnmount(() => clearTimeout(timerId))
 </script>
 
 <template>
-  <InputText v-model="query" type="search" :placeholder="placeholder" :aria-label="placeholder" fluid />
+  <InputText
+    v-model="query"
+    type="search"
+    :placeholder="placeholder"
+    :aria-label="placeholder"
+    fluid
+  />
 </template>

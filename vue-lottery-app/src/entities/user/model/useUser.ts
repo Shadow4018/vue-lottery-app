@@ -1,7 +1,7 @@
 import { computed, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useUsersStore } from './users.store'
-import { getErrorMessage } from '@/shared/lib/error'
+import { getErrorMessage } from '@/shared/lib'
 
 /** Завантажує користувача за id (з кешу стору або з API) зі станами loading / error. */
 export function useUser(id: Ref<number>) {

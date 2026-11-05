@@ -7,7 +7,7 @@ export const author = {
   skills: [
     'TypeScript / JavaScript',
     'Vue 3 (Composition API), Vue Router, Pinia',
-  'Feature-Sliced Design, PrimeVue',
+    'Feature-Sliced Design, PrimeVue',
     'HTML, CSS, SCSS, Bootstrap',
     'REST API, JWT-авторизація',
     'Git, GitHub, ESLint, Prettier',

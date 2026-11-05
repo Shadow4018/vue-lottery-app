@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { ServiceProvider } from '@/shared/api'
-import { getErrorMessage } from '@/shared/lib/error'
+import { getErrorMessage } from '@/shared/lib'
 import type { AuthService } from '../api/auth.service'
 import { AUTH_STORAGE_KEY } from '../config/constants'
 import type { AuthTokens, AuthUser, LoginCredentials } from './types'
@@ -95,7 +95,11 @@ export const useSessionStore = defineStore('session', () => {
     isLoading.value = true
     error.value = null
     try {
-      const { accessToken: access, refreshToken: refresh, ...profile } = await service().login(credentials)
+      const {
+        accessToken: access,
+        refreshToken: refresh,
+        ...profile
+      } = await service().login(credentials)
       setSession({ accessToken: access, refreshToken: refresh }, profile)
       return true
     } catch (e) {

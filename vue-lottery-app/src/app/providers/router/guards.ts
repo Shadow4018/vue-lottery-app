@@ -1,6 +1,6 @@
 import type { Router } from 'vue-router'
 import { env } from '@/shared/config'
-import { useSessionStore } from '@/entities/session/model/session.store'
+import { useSessionStore } from '@/entities/session'
 
 const APP_TITLE = env.appTitle
 

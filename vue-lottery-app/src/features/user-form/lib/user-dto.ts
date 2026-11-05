@@ -1,4 +1,4 @@
-import type { CreateUserDto, Gender, UpdateUserDto, User } from '@/entities/user/model/types'
+import type { CreateUserDto, Gender, UpdateUserDto, User } from '@/entities/user'
 import type { UserFormValues } from '../model/types'
 
 /** User -> значення полів форми (для редагування). */

@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { MIN_PASSWORD_LENGTH } from '@/shared/config/constants'
+import { MIN_PASSWORD_LENGTH } from '@/shared/config'
 
 /** Спільні правила валідації пароля (форми входу та користувача). */
 export const passwordTooShort = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`

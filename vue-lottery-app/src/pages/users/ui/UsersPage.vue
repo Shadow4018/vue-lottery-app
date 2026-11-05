@@ -140,12 +140,7 @@ async function confirmDelete(): Promise<void> {
       <AppSpinner v-else-if="isLoading" />
       <template v-else>
         <UsersTable :users="users" @remove="openDeleteDialog" />
-        <AppPagination
-          :page="page"
-          :total-records="total"
-          :rows="PAGE_SIZE"
-          @change="goToPage"
-        />
+        <AppPagination :page="page" :total-records="total" :rows="PAGE_SIZE" @change="goToPage" />
       </template>
     </div>
 

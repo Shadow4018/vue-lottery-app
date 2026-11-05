@@ -30,7 +30,8 @@ export const fsdRules = {
       'error',
       {
         default: 'disallow',
-        message: '${file.type} не може імпортувати з ${dependency.type} (порушення напрямку залежностей FSD)',
+        message:
+          '${file.type} не може імпортувати з ${dependency.type} (порушення напрямку залежностей FSD)',
         rules: [
           { from: 'app', allow: ['pages', 'widgets', 'features', 'entities', 'shared'] },
           { from: 'pages', allow: ['widgets', 'features', 'entities', 'shared'] },
@@ -54,9 +55,32 @@ export const fsdRules = {
   },
 }
 
+// UI-бібліотека (PrimeVue) підключається лише в shared/ui (обгортки) та app/providers/ui.ts (тема, сервіси)
+export const uiLibraryRules = [
+  {
+    files: ['src/**/*.{ts,vue}'],
+    ignores: ['src/shared/ui/**', 'src/app/providers/ui.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['primevue', 'primevue/*', '@primeuix/*', '@primevue/*'],
+              message:
+                'Імпортуйте компоненти лише через обгортки shared/ui (AppButton, AppInput, ...)',
+            },
+          ],
+        },
+      ],
+    },
+  },
+]
+
 export default [
   ...pluginVue.configs['flat/base'],
   { files: ['**/*.ts'], languageOptions: { parser: tseslint.parser } },
   { files: ['**/*.vue'], languageOptions: { parserOptions: { parser: tseslint.parser } } },
   fsdRules,
+  ...uiLibraryRules,
 ]

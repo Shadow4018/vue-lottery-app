@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { optionalPassword, requiredPassword } from '@/shared/lib/validation'
+import { optionalPassword, requiredPassword } from '@/shared/lib'
 
 const PHONE_REGEXP = /^\+?[\d\s\-()]{7,20}$/
 const MIN_AGE = 1

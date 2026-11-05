@@ -1,4 +1,4 @@
-import { HttpError } from '@/shared/api/http-client'
+import { HttpError } from '@/shared/api'
 
 /** Перетворює будь-яку помилку на текст, який можна показати користувачу. */
 export function getErrorMessage(error: unknown): string {

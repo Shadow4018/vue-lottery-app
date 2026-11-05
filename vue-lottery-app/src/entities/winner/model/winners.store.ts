@@ -1,23 +1,22 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { MAX_WINNERS } from '../config/constants'
-import type { User } from '@/entities/user/model/types'
-import type { Winner } from './types'
-import { fullName } from '@/shared/lib/format'
+import type { Winner, WinnerCandidate } from './types'
+import { fullName } from '@/shared/lib'
 
 export const useWinnersStore = defineStore('winners', () => {
   const winners = ref<Winner[]>([])
 
   /** Кандидати - лише ті, хто ще не став переможцем. */
-  function candidatesFrom(users: readonly User[]): User[] {
+  function candidatesFrom(users: readonly WinnerCandidate[]): WinnerCandidate[] {
     return users.filter((user) => !winners.value.some((winner) => winner.id === user.id))
   }
 
-  function canPickFrom(users: readonly User[]): boolean {
+  function canPickFrom(users: readonly WinnerCandidate[]): boolean {
     return winners.value.length < MAX_WINNERS && candidatesFrom(users).length > 0
   }
 
-  function pickFrom(users: readonly User[]): void {
+  function pickFrom(users: readonly WinnerCandidate[]): void {
     if (!canPickFrom(users)) {
       return
     }

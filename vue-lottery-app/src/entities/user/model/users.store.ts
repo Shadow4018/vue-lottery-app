@@ -5,7 +5,7 @@ import { PAGE_SIZE } from '@/shared/config'
 import type { UserService } from '../api/user.service'
 import { LOCAL_USER_ID_START } from '../config/constants'
 import type { CreateUserDto, UpdateUserDto, User } from './types'
-import { getErrorMessage } from '@/shared/lib/error'
+import { getErrorMessage } from '@/shared/lib'
 
 interface FetchPageParams {
   page: number

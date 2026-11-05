@@ -43,7 +43,12 @@ function onVisibleChange(value: boolean): void {
   >
     <slot />
     <template #footer>
-      <AppButton variant="danger" :label="confirmLabel" :loading="loading" @click="emit('confirm')" />
+      <AppButton
+        variant="danger"
+        :label="confirmLabel"
+        :loading="loading"
+        @click="emit('confirm')"
+      />
       <AppButton variant="secondary" :label="cancelLabel" :disabled="loading" @click="cancel" />
     </template>
   </Dialog>

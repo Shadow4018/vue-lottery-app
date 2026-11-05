@@ -47,7 +47,9 @@ function onUpdate(value: string | undefined): void {
       @update:model-value="onUpdate"
       @blur="emit('blur')"
     />
-    <small v-if="error" :id="`${id}-error`" class="app-input__error" role="alert">{{ error }}</small>
+    <small v-if="error" :id="`${id}-error`" class="app-input__error" role="alert">{{
+      error
+    }}</small>
   </div>
 </template>
 
