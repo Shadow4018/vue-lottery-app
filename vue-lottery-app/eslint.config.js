@@ -2,6 +2,7 @@ import js from '@eslint/js'
 import prettier from 'eslint-config-prettier'
 import pluginVue from 'eslint-plugin-vue'
 import tseslint from 'typescript-eslint'
+import { fsdRules, uiLibraryRules } from './eslint.fsd.config.js'
 
 export default [
   { ignores: ['dist/**', 'node_modules/**'] },
@@ -38,6 +39,10 @@ export default [
       'no-undef': 'off',
     },
   },
+
+  // правила Feature-Sliced Design (напрямок залежностей, Public API)
+  fsdRules,
+  ...uiLibraryRules,
 
   // вимикає правила форматування, які конфліктують із Prettier (має бути останнім)
   prettier,
